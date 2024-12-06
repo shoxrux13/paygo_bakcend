@@ -22,10 +22,6 @@ connectDB();
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
-// Asosiy yo'l
-// app.get('/', (req, res) => {
-//     res.send('Express API is running...');
-// });
 
 // Auth yo'llarini ulash
 app.use('/api/auth', authRoutes);

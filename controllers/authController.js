@@ -51,13 +51,10 @@ exports.login = async (req, res) => {
         const { phone_number, password } = req.body;
 
         // Foydalanuvchini topish
-        console.log(1);
-        
         const user = await User.findOne({ where: { phone_number } });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        console.log(2);
 
         // Parolni tekshirish
         const isMatch = await bcrypt.compare(password, user.password);
@@ -66,7 +63,7 @@ exports.login = async (req, res) => {
         }
 
         // JWT yaratish
-        const token = jwt.sign({ id: user.id, phone_number: user.phone_number }, JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user.id, phone_number: user.phone_number }, JWT_SECRET, { expiresIn: '72h' });
 
         res.json({ message: 'Login successful', token });
     } catch (error) {
