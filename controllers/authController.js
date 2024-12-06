@@ -8,13 +8,13 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 // Foydalanuvchini ro'yxatdan o'tkazish
 exports.register = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, phone_number, password } = req.body;
 
         // Parolni xeshlash
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Yangi foydalanuvchi yaratish
-        const user = await User.create({ name, email, password: hashedPassword });
+        const user = await User.create({ name, phone_number, password: hashedPassword });
 
         res.status(201).json({ message: 'User registered successfully', user });
     } catch (error) {
@@ -25,10 +25,10 @@ exports.register = async (req, res) => {
 // Tizimga kirish
 exports.login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { phone_number, password } = req.body;
 
         // Foydalanuvchini topish
-        const user = await User.findOne({ where: { email } });
+        const user = await User.findOne({ where: { phone_number } });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -40,7 +40,7 @@ exports.login = async (req, res) => {
         }
 
         // JWT yaratish
-        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user.id, phone_number: user.phone_number }, JWT_SECRET, { expiresIn: '1h' });
 
         res.json({ message: 'Login successful', token });
     } catch (error) {

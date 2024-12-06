@@ -24,12 +24,15 @@ const router = express.Router();
  *             type: object
  *             properties:
  *               name:
+ *                 example: Shoxrux
  *                 type: string
  *                 description: Foydalanuvchi ismi
- *               email:
+ *               phone_number:
+ *                 example: +99811456070
  *                 type: string
- *                 description: Foydalanuvchi email manzili
+ *                 description: Foydalanuvchi phone_number 
  *               password:
+ *                 example: 12345
  *                 type: string
  *                 description: Foydalanuvchi paroli
  *     responses:
@@ -53,17 +56,19 @@ router.post('/register', register);
  *           schema:
  *             type: object
  *             properties:
- *               email:
+ *               phone_number:
+ *                 example: +998911456070
  *                 type: string
  *                 description: Foydalanuvchi email manzili
  *               password:
+ *                 example: 12345
  *                 type: string
  *                 description: Foydalanuvchi paroli
  *     responses:
  *       200:
  *         description: Muvaffaqiyatli autentifikatsiya
  *       401:
- *         description: Noto'g'ri parol yoki email
+ *         description: Noto'g'ri parol yoki telefon raqam
  */
 router.post('/login', login);
 
