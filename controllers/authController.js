@@ -7,6 +7,18 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
 // Foydalanuvchini ro'yxatdan o'tkazish
 exports.register = async (req, res) => {
+    /*  #swagger.tags = ['Auth']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+        #swagger.parameters['body'] = {
+            in: 'body',
+            schema: {
+                $name: 'Shoxrux',
+                $phone_number: '+998911456070',
+                $password: '12356',
+            }
+    } */
     try {
         const { name, phone_number, password } = req.body;
 
@@ -24,14 +36,28 @@ exports.register = async (req, res) => {
 
 // Tizimga kirish
 exports.login = async (req, res) => {
+    /*  #swagger.tags = ['Auth']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+        #swagger.parameters['body'] = {
+            in: 'body',
+            schema: {
+                $phone_number: '+998911456070',
+                $password: '12356',
+            }
+    } */
     try {
         const { phone_number, password } = req.body;
 
         // Foydalanuvchini topish
+        console.log(1);
+        
         const user = await User.findOne({ where: { phone_number } });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
+        console.log(2);
 
         // Parolni tekshirish
         const isMatch = await bcrypt.compare(password, user.password);

@@ -4,7 +4,6 @@ const { authenticateToken } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
-// Himoyalangan yo'l
 router.get('/', authenticateToken, getUsers);
 
 module.exports = router;

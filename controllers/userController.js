@@ -1,6 +1,11 @@
 const User = require('../models/userModel');
 
 exports.createUser = async (req, res) => {
+    /*  #swagger.tags = ['Users']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+    */
     try {
         const { name, phone_number, password } = req.body;
         const user = await User.create({ name, phone_number, password });
@@ -11,8 +16,14 @@ exports.createUser = async (req, res) => {
 };
 
 exports.getUsers = async (req, res) => {
+    /*  #swagger.tags = ['Users']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+    */
     try {
         const users = await User.findAll();
+        
         res.status(200).json(users);
     } catch (error) {
         res.status(500).json({ error: error.message });
