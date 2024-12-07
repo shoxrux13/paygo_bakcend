@@ -20,6 +20,23 @@ const User = sequelize.define('users', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    status: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 1,
+    },
+    rating: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+    },
+    verification_code: { // Tasdiqlash kodi uchun maydon
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    is_verified: { // Tasdiqlanganligini aniqlash uchun maydon
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
 });
 
 module.exports = User;
