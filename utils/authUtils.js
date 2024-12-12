@@ -5,9 +5,11 @@ const generateVerificationCode = () => {
     return Math.floor(100000 + Math.random() * 900000).toString(); // 6 xonali tasdiqlash kodi
 };
 
-
+const SMS_API_LOGIN = process.env.SMS_API_LOGIN ;
+const SMS_API_PASSWORD = process.env.SMS_API_PASSWORD;
 
 const sendSMS = async (phone, text) => {
+    phone = phone.replace('+', ''); // Telefon raqamni tozalash
     const smsData = [
         {
             phone: phone, // Telefon raqam
@@ -16,8 +18,8 @@ const sendSMS = async (phone, text) => {
     ];
 
     const payload = new URLSearchParams({
-        login: 'Bekmen', // API login
-        password: '476M35Ez1sW42xoBen8X', // API parol
+        login: SMS_API_LOGIN, // API login
+        password: SMS_API_PASSWORD, // API parol
         data: JSON.stringify(smsData),
     });
 

@@ -20,6 +20,11 @@ const User = sequelize.define('users', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    role_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 1,
+    },
     status: {
         type: DataTypes.INTEGER,
         allowNull: false,

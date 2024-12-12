@@ -6,6 +6,7 @@ const { sendSMS,generateVerificationCode } = require('../utils/authUtils'); // S
 // Maxfiy kalit
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
+
 // Foydalanuvchini ro'yxatdan o'tkazish
 exports.register = async (req, res) => {
     /*  #swagger.tags = ['Auth']
@@ -38,7 +39,7 @@ exports.register = async (req, res) => {
         });
 
         // SMS orqali tasdiqlash kodini yuborish
-        await sendSMS(phone_number, `Your verification code is: ${verificationCode}`);
+        await sendSMS(phone_number, `Sizning PayGo ilovasi uchun tasdiqlash kodingiz: ${verificationCode}`);
 
         res.status(201).json({
             message: 'User registered successfully. Verification code sent to phone.',
