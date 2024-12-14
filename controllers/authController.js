@@ -161,7 +161,6 @@ exports.verifyPhoneNumber = async (req, res) => {
     }
 };
 
-
 // Tizimga kirish
 exports.login = async (req, res) => {
     /*  #swagger.tags = ['Auth']
