@@ -9,7 +9,7 @@ const SMS_API_LOGIN = process.env.SMS_API_LOGIN ;
 const SMS_API_PASSWORD = process.env.SMS_API_PASSWORD;
 
 const sendSMS = async (phone, text) => {
-    phone = phone.replace('+', ''); // Telefon raqamni tozalash
+    phone = phone.replace(/[\+\(\)\s-]/g, ''); // +, (, ), bo'sh joy va - belgilardan tozalash
     const smsData = [
         {
             phone: phone, // Telefon raqam

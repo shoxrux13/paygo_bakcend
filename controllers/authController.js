@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/userModel'); // User modelini import qiling
-const { sendSMS,generateVerificationCode } = require('../utils/authUtils'); // SMS funksiyani import qiling
+const { sendSMS, generateVerificationCode } = require('../utils/authUtils'); // SMS funksiyani import qiling
+const e = require('cors');
 
 // Maxfiy kalit
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
@@ -22,7 +23,26 @@ exports.register = async (req, res) => {
             }
     } */
     try {
-        const { name, phone_number, password } = req.body;
+        const { name, password } = req.body;
+        let { phone_number } = req.body; // `let` bilan e'lon qilish
+        phone_number = phone_number.replace(/[^\d+]/g, ''); // Telefon raqamni tozalash
+
+        console.log('phone_number', phone_number);
+        // Foydalanuvchi mavjudligini tekshirish
+        const existingUser = await User.findOne({ where: { phone_number } });
+
+        if (existingUser) {
+            // Agar foydalanuvchi mavjud bo'lsa va is_verified false bo'lsa
+            if (!existingUser.is_verified) {
+                return res.status(200).json({
+                    message: 'User already exists but not verified. Please verify your account.',
+                });
+            }
+            // Agar foydalanuvchi mavjud bo'lsa va is_verified true bo'lsa
+            return res.status(400).json({
+                message: 'Phone number already exists.',
+            });
+        }
 
         // Parolni xeshlash
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -48,6 +68,47 @@ exports.register = async (req, res) => {
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
+
+};
+
+exports.resendVerificationCode = async (req, res) => {
+    /*  #swagger.tags = ['Auth']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+        #swagger.parameters['body'] = {
+            in: 'body',
+            schema: {
+                $phone_number: '+998911456070',
+            }
+    } */
+    try {
+        let  { phone_number } = req.body;
+        phone_number = phone_number.replace(/[^\d+]/g, ''); // Telefon raqamni tozalash
+        // Foydalanuvchini topish
+        const user = await User.findOne({ where: { phone_number } });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (user.is_verified) {
+            return res.status(400).json({ message: 'Phone number already verified' });
+        }
+
+        // Tasdiqlash kodini generatsiya qilish
+        const verificationCode = generateVerificationCode();
+
+        // Tasdiqlash kodini saqlash
+        user.verification_code = verificationCode;
+        await user.save();
+
+        // SMS orqali tasdiqlash kodini yuborish
+        await sendSMS(phone_number, `Sizning PayGo ilovasi uchun tasdiqlash kodingiz: ${verificationCode}`);
+
+        res.json({ message: 'Verification code sent successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
 
 
@@ -64,8 +125,9 @@ exports.verifyPhoneNumber = async (req, res) => {
             }
     } */
     try {
-        const { phone_number, verification_code } = req.body;
-
+        const {verification_code } = req.body;
+        let { phone_number } = req.body;
+        phone_number = phone_number.replace(/[^\d+]/g, ''); // Telefon raqamni tozalash
         // Foydalanuvchini topish
         const user = await User.findOne({ where: { phone_number } });
         if (!user) {
@@ -103,8 +165,9 @@ exports.login = async (req, res) => {
             }
     } */
     try {
-        const { phone_number, password } = req.body;
-
+        const {password } = req.body;
+        let { phone_number } = req.body;
+        phone_number = phone_number.replace(/[^\d+]/g, ''); // Telefon raqamni tozalash
         // Foydalanuvchini topish
         const user = await User.findOne({ where: { phone_number } });
         if (!user) {

@@ -23,7 +23,7 @@ const User = sequelize.define('users', {
     role_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue: 1,
+        defaultValue: 0,
     },
     status: {
         type: DataTypes.INTEGER,
