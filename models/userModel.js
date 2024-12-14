@@ -16,10 +16,6 @@ const User = sequelize.define('users', {
         allowNull: false,
         unique: true,
     },
-    password: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
     role_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -41,6 +37,10 @@ const User = sequelize.define('users', {
     is_verified: { // Tasdiqlanganligini aniqlash uchun maydon
         type: DataTypes.BOOLEAN,
         defaultValue: false,
+    },
+    refresh_token: {
+        type: DataTypes.TEXT, // Refresh token uchun matn saqlanadi
+        allowNull: true,
     },
 });
 

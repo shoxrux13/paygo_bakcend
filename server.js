@@ -6,6 +6,8 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger-output.json');
+const path = require('path');
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -25,6 +27,12 @@ app.use(cors(corsOptions));
 // PostgreSQL ulanishi
 connectDB();
 
+app.use(express.static(path.join(__dirname, 'public')));
+
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // Swagger UI
 app.use('/docs',  cors(corsOptions), swaggerUi.serve, swaggerUi.setup(swaggerDocument));

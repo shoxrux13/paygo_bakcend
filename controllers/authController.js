@@ -1,11 +1,10 @@
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
 const User = require('../models/userModel'); // User modelini import qiling
+const crypto = require('crypto');
 const { sendSMS, generateVerificationCode } = require('../utils/authUtils'); // SMS funksiyani import qiling
-const e = require('cors');
 
 // Maxfiy kalit
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 
 // Foydalanuvchini ro'yxatdan o'tkazish
@@ -19,11 +18,10 @@ exports.register = async (req, res) => {
             schema: {
                 $name: 'Shoxrux',
                 $phone_number: '+998911456070',
-                $password: '12356',
             }
     } */
     try {
-        const { name, password } = req.body;
+        const { name } = req.body;
         let { phone_number } = req.body; // `let` bilan e'lon qilish
         phone_number = phone_number.replace(/[^\d+]/g, ''); // Telefon raqamni tozalash
 
@@ -44,9 +42,6 @@ exports.register = async (req, res) => {
             });
         }
 
-        // Parolni xeshlash
-        const hashedPassword = await bcrypt.hash(password, 10);
-
         // Tasdiqlash kodini generatsiya qilish
         const verificationCode = generateVerificationCode();
 
@@ -54,7 +49,6 @@ exports.register = async (req, res) => {
         const user = await User.create({
             name,
             phone_number,
-            password: hashedPassword,
             verification_code: verificationCode, // Tasdiqlash kodini saqlash
         });
 
@@ -83,7 +77,7 @@ exports.resendVerificationCode = async (req, res) => {
             }
     } */
     try {
-        let  { phone_number } = req.body;
+        let { phone_number } = req.body;
         phone_number = phone_number.replace(/[^\d+]/g, ''); // Telefon raqamni tozalash
         // Foydalanuvchini topish
         const user = await User.findOne({ where: { phone_number } });
@@ -111,7 +105,7 @@ exports.resendVerificationCode = async (req, res) => {
     }
 };
 
-
+// Telefon raqamni tasdiqlash
 exports.verifyPhoneNumber = async (req, res) => {
     /*  #swagger.tags = ['Auth']
         #swagger.security = [{
@@ -125,9 +119,10 @@ exports.verifyPhoneNumber = async (req, res) => {
             }
     } */
     try {
-        const {verification_code } = req.body;
+        const { verification_code } = req.body;
         let { phone_number } = req.body;
         phone_number = phone_number.replace(/[^\d+]/g, ''); // Telefon raqamni tozalash
+
         // Foydalanuvchini topish
         const user = await User.findOne({ where: { phone_number } });
         if (!user) {
@@ -144,7 +139,23 @@ exports.verifyPhoneNumber = async (req, res) => {
         user.verification_code = null; // Tasdiqlash kodini o‘chirish
         await user.save();
 
-        res.json({ message: 'Phone number verified successfully' });
+        // JWT access token yaratish
+        const accessToken = jwt.sign(
+            { id: user.id, phone_number: user.phone_number }, // Token ma'lumotlari
+            JWT_SECRET, // Maxfiy kalit
+            { expiresIn: '30m' } // Access token amal qilish muddati (15 daqiqa)
+        );
+
+        // Refresh token yaratish
+        const refreshToken = crypto.randomBytes(32).toString('hex');
+        user.refresh_token = refreshToken; // Refresh tokenni bazaga saqlash
+        await user.save();
+
+        res.json({
+            message: 'Phone number verified successfully',
+            accessToken, // Access tokenni qaytarish
+            refreshToken, // Refresh tokenni qaytarish
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -165,7 +176,6 @@ exports.login = async (req, res) => {
             }
     } */
     try {
-        const {password } = req.body;
         let { phone_number } = req.body;
         phone_number = phone_number.replace(/[^\d+]/g, ''); // Telefon raqamni tozalash
         // Foydalanuvchini topish
@@ -174,17 +184,69 @@ exports.login = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Parolni tekshirish
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(401).json({ message: 'Invalid credentials' });
-        }
+        // Tasdiqlash kodini generatsiya qilish
+        const verificationCode = generateVerificationCode();
 
-        // JWT yaratish
-        const token = jwt.sign({ id: user.id, phone_number: user.phone_number }, JWT_SECRET, { expiresIn: '72h' });
+        // Tasdiqlash kodini saqlash
+        user.verification_code = verificationCode;
+        await user.save();
 
-        res.json({ message: 'Login successful', token });
+        // SMS orqali tasdiqlash kodini yuborish
+        await sendSMS(phone_number, `Sizning PayGo ilovasi uchun tasdiqlash kodingiz: ${verificationCode}`);
+
+        res.json({ message: 'Verification code sent successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+
+// Tokenlarni yangilash
+exports.refreshAccessToken = async (req, res) => {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+        return res.status(400).json({ message: 'Refresh token is required' });
+    }
+
+    try {
+        // Refresh tokenni bazadan topish
+        const user = await User.findOne({ where: { refresh_token: refreshToken } });
+
+        if (!user) {
+            return res.status(403).json({ message: 'Invalid refresh token' });
+        }
+
+        // Yangi access token yaratish
+        const accessToken = jwt.sign(
+            { id: user.id, phone_number: user.phone_number },
+            JWT_SECRET,
+            { expiresIn: '30m' } // 15 daqiqa amal qiladi
+        );
+
+        res.json({ accessToken });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Chiqish
+exports.logout = async (req, res) => {
+    const { refreshToken } = req.body;
+
+    try {
+        const user = await User.findOne({ where: { refresh_token: refreshToken } });
+
+        if (!user) {
+            return res.status(403).json({ message: 'Invalid refresh token' });
+        }
+
+        user.refresh_token = null; // Refresh tokenni o‘chirish
+        await user.save();
+
+        res.json({ message: 'Logged out successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+
