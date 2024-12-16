@@ -153,6 +153,7 @@ exports.verifyPhoneNumber = async (req, res) => {
 
         res.json({
             message: 'Phone number verified successfully',
+            role_id: user.role_id,
             accessToken, // Access tokenni qaytarish
             refreshToken, // Refresh tokenni qaytarish
         });
@@ -160,6 +161,7 @@ exports.verifyPhoneNumber = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 // Tizimga kirish
 exports.login = async (req, res) => {
@@ -171,7 +173,6 @@ exports.login = async (req, res) => {
             in: 'body',
             schema: {
                 $phone_number: '+998911456070',
-                $password: '12356',
             }
     } */
     try {

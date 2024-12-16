@@ -34,16 +34,36 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Swagger UI
-app.use('/docs',  cors(corsOptions), swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
+const ipFilterMiddleware = (allowedIPs) => (req, res, next) => {
+    // IP manzilni olish
+    let clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+    // IPv6 prefiksni olib tashlash
+    if (clientIP.includes('::ffff:')) {
+        clientIP = clientIP.split('::ffff:')[1];
+    }
+
+
+    // IP tekshirish
+    if (!allowedIPs.includes(clientIP)) {
+        const path = require('path'); // Path modulini ulash kerak
+        return res.sendFile(path.join(__dirname, '404.html'));
+    }
+
+    next();
+};
+
+// Swagger UI faqat ruxsat berilgan IP'lar uchun
+const allowedIPsForSwagger = ['10.100.26.2', '195.158.24.85']; // Swagger uchun ruxsat berilgan IP'lar
+app.use('/docs', ipFilterMiddleware(allowedIPsForSwagger), cors(corsOptions), swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Auth yo'llarini ulash
-app.use('/api/auth', authRoutes);
+app.use('/services/zyber/api/auth', authRoutes);
 
 // Himoyalangan yo'llar
-app.use('/api/users', userRoutes);
+app.use('/services/zyber/api/users', userRoutes);
 
 // Serverni ishga tushirish
 app.listen(PORT, () => console.log(`Server running on http://${HOST}:${PORT}`));

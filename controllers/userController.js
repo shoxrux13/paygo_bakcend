@@ -1,4 +1,6 @@
 const User = require('../models/userModel');
+const Role = require('../models/roleModel');
+const e = require('express');
 
 // Foydalanuvchilarni olish
 exports.getUsers = async (req, res) => {
@@ -18,7 +20,7 @@ exports.getUsers = async (req, res) => {
             };
         });
 
-        
+
         res.status(200).json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -50,3 +52,66 @@ exports.getUserById = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// Foydalanuvchini statusini olish
+exports.getUserStatus = async (req, res) => {
+    /*  #swagger.tags = ['Users']
+        #swagger.security
+        #swagger.parameters['id'] = { description: 'User ID' }
+    */
+    try {
+        const user = await User.findOne({ where: { id: req.params.id } });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json({ status: user.status });
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+// Rollarni olish
+exports.getRoles = async (req, res) => {
+    /*  #swagger.tags = ['Users']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+    */
+    try {
+        const roles = await Role.findAll(
+            {
+                attributes: ['id', 'name1'],
+                where: { id: [1, 2, 3] },
+                order: [['id', 'ASC']]
+            }
+        );
+        res.status(200).json(roles);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+
+// Foydalanuvchini rolini taxrirlash
+exports.updateUserRole = async (req, res) => {
+    /*  #swagger.tags = ['Users']
+        #swagger.security
+        #swagger.parameters['id'] = { description: 'User ID' }
+        #swagger.parameters['role_id'] = { description: 'Role ID' }
+    */
+    try {
+        const user = await User.findOne({ where: { id: req.params.id } });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.role_id = req.body.role_id;
+        await user.save();
+
+        res.status(200).json({ message: 'User role updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
