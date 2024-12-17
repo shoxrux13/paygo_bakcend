@@ -33,10 +33,9 @@ exports.getUserById = async (req, res) => {
         #swagger.security = [{
             "apiKeyAuth": []
         }]
-        #swagger.parameters['id'] = { description: 'User ID' }
     */
     try {
-        const user = await User.findOne({ where: { id: req.params.id } });
+        const user = await User.findOne({ where: { id: req.user.id } });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -56,16 +55,17 @@ exports.getUserById = async (req, res) => {
 // Foydalanuvchini statusini olish
 exports.getUserStatus = async (req, res) => {
     /*  #swagger.tags = ['Users']
-        #swagger.security
-        #swagger.parameters['id'] = { description: 'User ID' }
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
     */
     try {
-        const user = await User.findOne({ where: { id: req.params.id } });
+        const user = await User.findOne({ where: { id: req.user.id } });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        res.status(200).json({ status: user.status });
+        res.status(200).json({ status: user.status , role_id: user.role_id });
     }
     catch (error) {
         res.status(500).json({ error: error.message });
@@ -82,7 +82,7 @@ exports.getRoles = async (req, res) => {
     try {
         const roles = await Role.findAll(
             {
-                attributes: ['id', 'name1'],
+                attributes: ['id', ['name1' , 'name']],
                 where: { id: [1, 2, 3] },
                 order: [['id', 'ASC']]
             }
@@ -98,11 +98,10 @@ exports.getRoles = async (req, res) => {
 exports.updateUserRole = async (req, res) => {
     /*  #swagger.tags = ['Users']
         #swagger.security
-        #swagger.parameters['id'] = { description: 'User ID' }
         #swagger.parameters['role_id'] = { description: 'Role ID' }
     */
     try {
-        const user = await User.findOne({ where: { id: req.params.id } });
+        const user = await User.findOne({ where: { id: req.user.id } });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
