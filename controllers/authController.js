@@ -128,6 +128,8 @@ exports.verifyPhoneNumber = async (req, res) => {
         let { phone_number } = req.body;
         phone_number = phone_number.replace(/[^\d+]/g, ''); // Telefon raqamni tozalash
 
+        
+
         // Foydalanuvchini topish
         const user = await User.findOne({ where: { phone_number } });
         if (!user) {

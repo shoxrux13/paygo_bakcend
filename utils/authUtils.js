@@ -31,7 +31,6 @@ const sendSMS = async (phone, text) => {
             },
         });
 
-        console.log('SMS sent successfully:', response.data);
         return response.data;
     } catch (error) {
         console.error('Failed to send SMS:', error.message);
