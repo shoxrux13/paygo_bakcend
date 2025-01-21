@@ -1,0 +1,196 @@
+const User = require('../models/userModel');
+const Role = require('../models/roleModel');
+const Vehicle = require('../models/vehicleModel');
+const { QueryTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
+
+
+// Foydalanuvchilarni olish
+exports.getUsers = async (req, res) => {
+    /*  #swagger.tags = ['Users']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+    */
+    try {
+        const users = await User.findAll();
+
+        data = users.map((user) => {
+            return {
+                id: user.id,
+                name: user.name,
+                phone_number: user.phone_number,
+            };
+        });
+
+
+        res.status(200).json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Foydalanuvchini id bo'yicha olish
+exports.getUserById = async (req, res) => {
+    /*  #swagger.tags = ['Users']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+    */
+    try {
+        const user = await User.findOne({ where: { id: req.user.id } });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+
+        const [balance] = await sequelize.query(
+            `SELECT  (
+                        SELECT COALESCE(SUM(b1.balance), 0)
+                        FROM billings b1
+                        WHERE b1.user_id = ${user.id} AND b1.tariff_id IS NULL
+                    ) - (
+                        SELECT COALESCE(SUM(b2.balance), 0)
+                        FROM billings b2
+                        WHERE b2.user_id = ${user.id} AND b2.tariff_id IS NOT NULL
+                    ) AS balance`,
+            { type: QueryTypes.SELECT }
+        );
+
+        
+
+
+
+        const formattedPrice = balance ? new Intl.NumberFormat('uz-UZ').format(balance.balance) : 0;
+        data = {
+            id: user.id,
+            name: user.name,
+            phone_number: user.phone_number,
+            balance: formattedPrice,
+        };
+
+        res.status(200).json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Foydalanuvchini statusini olish
+exports.getUserStatus = async (req, res) => {
+    /*  #swagger.tags = ['Users']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+    */
+    try {
+        const user = await User.findOne({ where: { id: req.user.id } });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json({ status: user.status, role_id: user.role_id });
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+// Rollarni olish
+exports.getRoles = async (req, res) => {
+    /*  #swagger.tags = ['Users']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+    */
+    try {
+        const roles = await Role.findAll(
+            {
+                attributes: ['id', ['name1', 'name']],
+                where: { id: [1, 2, 3] },
+                order: [['id', 'ASC']]
+            }
+        );
+
+        res.status(200).json(roles);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+
+// Foydalanuvchini rolini taxrirlash
+exports.updateUserRole = async (req, res) => {
+
+    /*  #swagger.tags = ['Users']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+    */
+    try {
+
+        const role_id = req.body.role_id;
+
+        console.log(role_id);
+
+
+        const user = await User.findOne({ where: { id: req.user.id } });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.role_id = role_id;
+        await user.save();
+
+        res.status(200).json({
+            status: 200,
+            message: 'User role updated successfully'
+        });
+    } catch (error) {
+        console.log(error.message);
+
+        res.status(500).json({ error: error.message });
+    }
+}
+
+exports.addVehicle = async (req, res) => {
+    /*  #swagger.tags = ['Users']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+        #swagger.parameters['body'] = {
+        in: 'body',
+        schema: {
+            $brand_id: 1,
+            $model_id: 3,
+            $plate_number: '01A123AA',
+            $from_location: 12,
+            $to_location: 13,
+        }
+    }
+    */
+    try {
+        const vehicle = req.body;
+
+
+        const newVehicle = await Vehicle.create({
+            user_id: req.user.id,
+            brand_id: vehicle.brand_id,
+            model_id: vehicle.model_id,
+            plate_number: vehicle.plate_number,
+            from_location: vehicle.from_location,
+            to_location: vehicle.to_location,
+        });
+
+
+        res.status(201).json({
+            success: true,
+            message: "Vehicle created successfully",
+            vehicle: newVehicle,
+        });
+    } catch (error) {
+        console.log(error.message);
+
+        res.status(500).json({ error: error.message });
+    }
+};
+
