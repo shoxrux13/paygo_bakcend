@@ -38,7 +38,26 @@ exports.getUserById = async (req, res) => {
         }]
     */
     try {
-        const user = await User.findOne({ where: { id: req.user.id } });
+        
+        const [user] = await sequelize.query(
+            `SELECT u.id, u.name, u.phone_number, r.name1 AS role,
+            u.rating, cb.name1 AS brand, cm.name1 AS model, v.plate_number,
+            r1.name1 AS from_location, r2.name1 AS to_location
+            FROM users u
+            LEFT JOIN roles r ON u.role_id = r.id
+            LEFT JOIN vehicles v ON u.id = v.user_id
+            LEFT JOIN car_brands cb ON v.brand_id = cb.id
+            LEFT JOIN car_models cm ON v.model_id = cm.id
+            LEFT JOIN regions r1 ON v.from_location = r1.id
+            LEFT JOIN regions r2 ON v.to_location = r2.id
+            WHERE u.id = ${req.user.id}
+            `,
+            { type: QueryTypes.SELECT }
+        );
+
+        console.log(user);
+        
+
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -62,15 +81,28 @@ exports.getUserById = async (req, res) => {
 
 
         const formattedPrice = balance ? new Intl.NumberFormat('uz-UZ').format(balance.balance) : 0;
+        const fromat_plate_number = parsePlateNumber(user.plate_number);
         data = {
             id: user.id,
             name: user.name,
             phone_number: user.phone_number,
             balance: formattedPrice,
+            role: user.role,
+            rating: user.rating,
+            vehicle: {
+                brand: user.brand,
+                model: user.model,
+                region_number: fromat_plate_number.region_number,
+                plate_number: fromat_plate_number.plate_number,
+                from_location: user.from_location,
+                to_location: user.to_location
+            }
         };
 
         res.status(200).json(data);
     } catch (error) {
+        console.log(error.message);
+        
         res.status(500).json({ error: error.message });
     }
 };
@@ -194,3 +226,25 @@ exports.addVehicle = async (req, res) => {
     }
 };
 
+function parsePlateNumber(plate_number) {
+    // 1. Region raqamini olish (birinchi 2 belgini ajratish)
+    const region_number = plate_number.substring(0, 2);
+
+    // 2. Qolgan qismini ajratish va formatga qarab ishlash
+    let plate_details = plate_number.substring(2).trim();
+
+    // 3. Raqamning qolgan qismini formatlash
+    if (/^[A-Z]/.test(plate_details)) {
+        // Agar raqam harf bilan boshlansa
+        plate_details = `${plate_details[0]} ${plate_details.slice(1, 4)} ${plate_details.slice(4)}`;
+    } else {
+        // Agar raqam raqamlar bilan boshlansa
+        plate_details = `${plate_details.slice(0, 3)} ${plate_details.slice(3)}`;
+    }
+
+    // 4. Natijani qaytarish
+    return {
+        region_number,
+        plate_number: plate_details,
+    };
+}

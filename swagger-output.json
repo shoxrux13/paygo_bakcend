@@ -181,6 +181,9 @@
     },
     "/services/zyber/api/auth/refresh": {
       "post": {
+        "tags": [
+          "Auth"
+        ],
         "description": "",
         "parameters": [
           {
@@ -190,9 +193,13 @@
               "type": "object",
               "properties": {
                 "refreshToken": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "refresh token"
                 }
-              }
+              },
+              "required": [
+                "refreshToken"
+              ]
             }
           }
         ],
@@ -212,7 +219,12 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
       }
     },
     "/services/zyber/api/auth/login": {
@@ -259,6 +271,9 @@
     },
     "/services/zyber/api/auth/logout": {
       "post": {
+        "tags": [
+          "Auth"
+        ],
         "description": "",
         "parameters": [
           {
@@ -287,7 +302,12 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
       }
     },
     "/services/zyber/api/users/get-users": {
@@ -811,6 +831,153 @@
         ]
       }
     },
+    "/services/zyber/api/orders/make-taxi-order": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "from_location": {
+                  "type": "number",
+                  "example": 12
+                },
+                "to_location": {
+                  "type": "number",
+                  "example": 9
+                },
+                "passenger_count": {
+                  "type": "number",
+                  "example": 2
+                },
+                "pochta": {
+                  "type": "string",
+                  "example": "Pochta bor Quqonga"
+                },
+                "time_id": {
+                  "type": "number",
+                  "example": 1
+                }
+              },
+              "required": [
+                "from_location",
+                "to_location",
+                "passenger_count",
+                "pochta",
+                "time_id"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/services/zyber/api/orders/get-my-orders": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/services/zyber/api/orders/get-new-taxi-orders": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
     "/services/zyber/api/ref/get-car-brands": {
       "get": {
         "tags": [
@@ -928,6 +1095,43 @@
       }
     },
     "/services/zyber/api/ref/get-tariffs": {
+      "get": {
+        "tags": [
+          "Ref"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/services/zyber/api/ref/get-times": {
       "get": {
         "tags": [
           "Ref"

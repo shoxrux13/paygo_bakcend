@@ -30,7 +30,15 @@ const TaxiOrder = sequelize.define('taxi_orders', {
     passenger_count:{
         type: DataTypes.INTEGER,
         allowNull: true,
-    }
+    },
+    pochta:{
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    time_id:{
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    }, 
 
    
 });

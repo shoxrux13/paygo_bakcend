@@ -5,6 +5,7 @@ const { connectDB } = require('./config/database');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 const refRoutes = require('./routes/refRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger-output.json');
@@ -74,6 +75,7 @@ app.use('/services/zyber/api/auth', authRoutes);
 // Himoyalangan yo'llar
 app.use('/services/zyber/api/users', userRoutes);
 app.use('/services/zyber/api/payments', paymentRoutes);
+app.use('/services/zyber/api/orders', orderRoutes);
 app.use('/services/zyber/api/ref', refRoutes);
 
 

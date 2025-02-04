@@ -2,7 +2,7 @@ const CarModel = require('../models/CarModel');
 const CarBrand = require('../models/CarBrandModel');
 const Region = require('../models/RegionModel');
 const TariffModel = require('../models/tariffModel');
-const { or } = require('sequelize');
+const Time = require('../models/timeModel');
 
 
 exports.getCarBrands = async (req, res) => {
@@ -106,6 +106,32 @@ exports.getTarifss = async (req, res) => {
                 monthly: tariff.monthly,
                 // tariff.price to 16 000 yoki 160 000 ko'rinishda bo'lishi kerak
                 price: formattedPrice,
+    
+            };
+        });
+
+        res.status(200).json(data);
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+exports.getTimes = async (req, res) => {
+    /*  #swagger.tags = ['Ref']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+    */
+    try {
+        const times = await Time.findAll({
+            order: [['id', 'ASC']], // `name1` ustuni bo‘yicha o‘sish tartibida tartiblash
+        });
+
+        data = times.map((time) => {
+            return {
+                id: time.id,
+                name: time.name1,
     
             };
         });

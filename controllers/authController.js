@@ -103,7 +103,9 @@ exports.resendVerificationCode = async (req, res) => {
         // SMS orqali tasdiqlash kodini yuborish
         await sendSMS(phone_number, `Sizning PayGo ilovasi uchun tasdiqlash kodingiz: ${verificationCode}`);
 
-        res.json({ message: 'Verification code sent successfully' });
+        res.json({ 
+            status: 200,
+            message: 'Verification code sent successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -149,7 +151,7 @@ exports.verifyPhoneNumber = async (req, res) => {
 
         // JWT access token yaratish
         const accessToken = jwt.sign(
-            { id: user.id, phone_number: user.phone_number }, // Token ma'lumotlari
+            { id: user.id, phone_number: user.phone_number, role: user.role_id }, // Token ma'lumotlari
             JWT_SECRET, // Maxfiy kalit
             { expiresIn: '3h' } // Access token amal qilish muddati (15 daqiqa)
         );
@@ -193,6 +195,10 @@ exports.login = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        //Update user is_verified
+        user.is_verified = false;
+        await user.save();
+
         // Tasdiqlash kodini generatsiya qilish
         const verificationCode = generateVerificationCode();
 
@@ -203,7 +209,9 @@ exports.login = async (req, res) => {
         // SMS orqali tasdiqlash kodini yuborish
         await sendSMS(phone_number, `Sizning PayGo ilovasi uchun tasdiqlash kodingiz: ${verificationCode}`);
 
-        res.json({ message: 'Verification code sent successfully' });
+        res.json({ 
+            status: 200,
+            message: 'Verification code sent successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -211,6 +219,16 @@ exports.login = async (req, res) => {
 
 // Tokenlarni yangilash
 exports.refreshAccessToken = async (req, res) => {
+        /*  #swagger.tags = ['Auth']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+        #swagger.parameters['body'] = {
+            in: 'body',
+            schema: {
+             $refreshToken: 'refresh token'
+            }
+    } */
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
@@ -227,7 +245,7 @@ exports.refreshAccessToken = async (req, res) => {
 
         // Yangi access token yaratish
         const accessToken = jwt.sign(
-            { id: user.id, phone_number: user.phone_number },
+            { id: user.id, phone_number: user.phone_number, role: user.role_id  },
             JWT_SECRET,
             { expiresIn: '3h' } // 15 daqiqa amal qiladi
         );
@@ -240,6 +258,11 @@ exports.refreshAccessToken = async (req, res) => {
 
 // Chiqish
 exports.logout = async (req, res) => {
+        /*  #swagger.tags = ['Auth']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+        */
     const { refreshToken } = req.body;
 
     try {
