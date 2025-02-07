@@ -15,7 +15,7 @@ const Vehicle = sequelize.define('vehicles', {
         type: DataTypes.INTEGER,
         allowNull: true,
     },
-    model_id : {
+    model_id: {
         type: DataTypes.INTEGER,
         allowNull: true,
     },
@@ -32,7 +32,15 @@ const Vehicle = sequelize.define('vehicles', {
         type: DataTypes.INTEGER,
         allowNull: true,
     },
-   
+    lat: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    long: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+
 });
 
 module.exports = Vehicle;

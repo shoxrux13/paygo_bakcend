@@ -226,6 +226,38 @@ exports.addVehicle = async (req, res) => {
     }
 };
 
+exports.updateLocation = async (req, res) => {
+    /*  #swagger.tags = ['Users']
+        #swagger.security = [{
+            "apiKeyAuth": []
+        }]
+        #swagger.parameters['body'] = {
+        in: 'body',
+        schema: {
+            $lat: '46.45423543',
+            $long: '67.4564556',
+        }
+    }
+    */
+    try {
+        const {lat, long} = req.body;
+
+
+        const vehicle = await Vehicle.update({ lat, long }, {
+            where: { user_id: req.user.id }
+        });
+
+        res.status(200).json({
+            status:200,
+            message: "Location update successfully",
+        });
+    } catch (error) {
+        console.log(error.message);
+
+        res.status(500).json({ error: error.message });
+    }
+};
+
 function parsePlateNumber(plate_number) {
     // 1. Region raqamini olish (birinchi 2 belgini ajratish)
     const region_number = plate_number.substring(0, 2);
