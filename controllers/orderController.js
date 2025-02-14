@@ -152,9 +152,13 @@ exports.acceptTaxiOrder = async (req, res) => {
             { type: QueryTypes.SELECT }
         );
 
+       
         
 
-        if (isSet(orders) &&orders[0].status == 2) {
+        
+
+        if (orders?.[0]?.status == 2) {
+            
             const status = 1;
             const driver_id = null;
             const order = await TaxiOrder.update({ driver_id, status }, {
