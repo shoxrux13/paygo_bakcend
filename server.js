@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 const refRoutes = require('./routes/refRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger-output.json');
@@ -30,6 +31,8 @@ app.use(cors({
 connectDB();
 
 app.use(express.static(path.join(__dirname, 'public')));
+// Public uploads uchun static fayllarni ochish
+app.use("/uploads", express.static("public/uploads/chat"));
 
 const ipFilterMiddleware = (allowedIPs) => (req, res, next) => {
     // IP manzilni olish
@@ -76,6 +79,7 @@ app.use('/services/zyber/api/auth', authRoutes);
 app.use('/services/zyber/api/users', userRoutes);
 app.use('/services/zyber/api/payments', paymentRoutes);
 app.use('/services/zyber/api/orders', orderRoutes);
+app.use('/services/zyber/api/chat', chatRoutes);
 app.use('/services/zyber/api/ref', refRoutes);
 
 
